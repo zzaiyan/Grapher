@@ -24,7 +24,7 @@ class World : public QWidget {
   QPen pen(int x);
 
   void paintEvent(QPaintEvent* event);
-  QPen pen_B, pen_R, pen_G;
+  QPen pen_1, pen_2, pen_3;
   void drawNode(QPoint t, QString s, QPen pen);
   void drawEdge(QPoint t1, QPoint t2, int r, QString s, QPen pen);
 
@@ -38,20 +38,6 @@ class World : public QWidget {
   QLabel* Txt;
 
   int siz_node, siz_step;
-
-  static std::vector<int> getnum(std::string s) {
-    int x = 0;
-    std::vector<int> v;
-    for (int i = 0; i < (int)s.length(); i++) {
-      if (s[i] >= '0' && s[i] <= '9') {
-        while (s[i] >= '0' && s[i] <= '9' && i < (int)s.length())
-          x = x * 10 + s[i] - '0', i++;
-        v.push_back(x);
-        x = 0;
-      }
-    }
-    return v;
-  }
 };
 
 #endif  // WORLD_H

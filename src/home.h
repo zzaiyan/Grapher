@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QWidget>
 #include "_global.h"
+#include "graph.h"
 #include "world.h"
 
 QT_BEGIN_NAMESPACE
@@ -32,6 +33,10 @@ class Home : public QWidget {
 
   void nextStep();
   void Init_graph();
+
+  // Data
+  eGraph* dGraph;
+  ALGraph* pGraph;
 
  private:
   Ui::Home* ui;

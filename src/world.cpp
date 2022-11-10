@@ -1,12 +1,12 @@
 #include "world.h"
 
 World::World(QWidget* parent) : QWidget(parent) {
-  pen_B.setColor(Qt::black);
-  pen_B.setWidth(2);
-  pen_R.setColor(Qt::red);
-  pen_R.setWidth(2);
-  pen_G.setColor(Qt::green);
-  pen_G.setWidth(2);
+  pen_1.setColor(Qt::black);
+  pen_1.setWidth(2);
+  pen_2.setColor(QColor(255, 153, 0));
+  pen_2.setWidth(2);
+  pen_3.setColor(QColor(255, 51, 51));
+  pen_3.setWidth(2);
 
   std::memset(edge, 0, sizeof(edge));
   std::memset(color_E, 0, sizeof(color_E));
@@ -85,13 +85,14 @@ void World::setText(QString s) {
 
 QPen World::pen(int x) {
   if (x == 2)
-    return pen_R;
+    return pen_2;
   if (x == 3)
-    return pen_G;
-  return pen_B;
+    return pen_3;
+  return pen_1;
 }
 
 void World::paintEvent(QPaintEvent* event) {
+  //  qDebug() << "paintEvent";
   int x = 150, y = 150, r = 130;
   int n = siz_node;
   if (n == 0)
@@ -108,7 +109,7 @@ void World::paintEvent(QPaintEvent* event) {
     v.push_back(QPoint(50, 110));
     v.push_back(QPoint(150, 30));
     for (int i = 0; i < n; i++) {
-      drawNode(v[i], QString::number(i), (!color_N[i]) ? pen_B : pen_R);
+      drawNode(v[i], QString::number(i), (!color_N[i]) ? pen_1 : pen_2);
     }
   } else
     for (int i = 0; i < n; i++) {
@@ -117,7 +118,7 @@ void World::paintEvent(QPaintEvent* event) {
       v.push_back(
           QPoint(double(x) + r * cos(angle), double(y) + r * sin(angle)));
       drawNode(QPoint(double(x) + r * cos(angle), double(y) + r * sin(angle)),
-               QString::number(i), (!color_N[i]) ? pen_B : pen_R);
+               QString::number(i), (!color_N[i]) ? pen_1 : pen_2);
       angle += 2 * acos(-1) / double(n);
     }
   for (int i = 0; i < n; i++) {

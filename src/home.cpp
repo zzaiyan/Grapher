@@ -94,7 +94,7 @@ Home::Home(QWidget* parent) : QWidget(parent), ui(new Ui::Home) {
 
   connect(btn_stop, &QPushButton::clicked, this, [=]() { timer->stop(); });
 
-  qDebug() << this->x() << this->y();
+  //  qDebug() << this->x() << this->y();
 }
 
 Home::~Home() {
@@ -116,10 +116,21 @@ void Home::Init_graph() {
   //    s_dfs=DFS(Cur_graph).Steps();
   //    qDebug() << QString::fromStdString(s_dfs);
 
-  //实现要求的三个算法,根据Cur_graph中的图信息建图。
-  //同时,在运行三个算法运行的同时生成其步骤信息，将三个算法对应的步骤信息分别放到s_dfs,s_prim,s_dij中，以实现动态展示
-  //自己设计步骤信息的生成方式，只要生成的步骤信息满足README中的格式要求，能正常展示算法流程即可。
+  // 实现要求的三个算法,根据Cur_graph中的图信息建图。
+  // 同时,在运行三个算法运行的同时生成其步骤信息，将三个算法对应的步骤信息分别放到s_dfs,s_prim,s_dij中，以实现动态展示
+  // 自己设计步骤信息的生成方式，只要生成的步骤信息满足README中的格式要求，能正常展示算法流程即可。
   // You code here!!!!!!!!!!!
+  dGraph = new eGraph(Cur_graph);
+  pGraph = new ALGraph(Cur_graph);
+
+  dGraph->dfs();
+  s_dfs = dGraph->getSteps();
+
+  pGraph->prim();
+  s_prim = pGraph->getSteps();
+
+  delete dGraph;
+  delete pGraph;
 
   //    s_dfs=;
   //    s_prim=;
