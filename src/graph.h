@@ -1,20 +1,21 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <algorithm>
+#include <cstring>
 #include <queue>
 #include <string>
 #include <vector>
 using std::queue;
 using std::string;
 using std::vector;
-//#include <iostream>
 #include "_global.h"
 
 using namespace std;
 
 class eGraph {
   struct Edge {
-    int u, v;
+    int start, end;
   };
 
  public:
@@ -25,122 +26,198 @@ class eGraph {
 
   eGraph(string s) {
     qDebug() << "-------------------------------build eGraph";
-    auto vec = getnum(s);
+    auto vec = _getNum(s);
     n = vec[0];
     m = vec.size() / 3;
+    m <<= 1;
     //    e.push_back({-1, -1});
     vis.resize(n + 1, false);
     for (int i = 1; i < (int)vec.size(); i++) {
       int a = vec[i++], b = vec[i++];
       e.push_back({a, b});
+      e.push_back({b, a});
       //      qDebug() << QString("Edge: %1, %2").arg(a).arg(b);
     }
   }
 
-  void dfs(int u = 0) {
+  Step load, recv, his;
+  void dfs() {
+    load.clear();
+    recv.clear();
+    his.clear();
+    dfs(0);
+  }
+  void dfs(int u) {
     vis[u] = true;
     int ne;
+    load.clear();
     //    qDebug() << "visit " << u;
     for (int i = 0; i < m; ++i) {
-      if ((u == e[i].u) && !vis[e[i].v])
-        ne = e[i].v;
-      else if ((u == e[i].v) && !vis[e[i].u])
-        ne = e[i].u;
+      if (u == e[i].start && !vis[e[i].end]) {
+        load.add(u, e[i].end, 2);
+        recv.add(u, e[i].end, 1);
+      }
+    }
+
+    for (int i = 0; i < m; ++i) {
+      if (u == e[i].start && !vis[e[i].end])
+        ne = e[i].end;
       else
         continue;
 
-      auto patch = QString("1 %1 %2 3").arg(u).arg(ne);
-      //      qDebug() << u << ne;
-      steps.push_back(patch.toStdString());
+      steps.push_back((recv + his + load).get());
+      his.add(u, ne, 3);
+      steps.push_back((recv + load + his).get());
+
       dfs(ne);
     }
   }
 
-  string getSteps() {
-    string ret;
-    for (int i = 0; i < steps.size(); i++)
-      ret += steps[i], ret.push_back('\n');
-    return ret;
-  }
+  string getSteps() { return _getSteps(steps); }
 };
 
-#define MinHeap(T) priority_queue<T, vector<T>, greater<T>>
-#define qNode pair<int, int>
-class ALGraph {
-  struct Edge {
-    int u = -1, v = -1, w = -1, next = -1;
-  } e[400005];
+constexpr int MAXN = 20;
+class MGraph {
+  int g[MAXN][MAXN];  //为稠密阵所以用邻接矩阵存储
+  int dist[MAXN];     //用于记录每一个点距离第一个点的距离
+  int path[MAXN];
+  bool st[MAXN];  //用于记录该点的最短距离是否已经确定
 
-  int k = 0, n, m, cnt = 0, sum = 0;
-  int head[5005]{0}, dis[5005]{0}, vis[5005]{0};
-  MinHeap(qNode) q;
+  int n, m;
 
- public:
   vector<string> steps;
 
-  ALGraph(string s) {
-    qDebug() << "-------------------------------build ALGrap  h";
-    auto vec = getnum(s);
-    memset(dis, 127, sizeof(dis));
-    memset(head, -1, sizeof(head));
+ public:
+  MGraph(const string& s) {
+    qDebug() << "-------------------------------build MpGraph";
+    memset(g, 0x3f, sizeof g);  //初始化图 因为是求最短路径
+                                //所以每个点初始为无限大
+    auto vec = _getNum(s);
     n = vec[0], m = vec.size() / 3;
     for (int i = 1; i < (int)vec.size();) {
       int a = vec[i++], b = vec[i++], c = vec[i++];
-      add(a + 1, b + 1, c);
-      add(b + 1, a + 1, c);
       //      qDebug() << QString("Edge: %1, %2, %3").arg(a).arg(b).arg(c);
+      g[a + 1][b + 1] = g[b + 1][a + 1] = c;
     }
-    prim();
-    qDebug() << "MST.sum = " << sum;
-  }
-
-  void add(int u, int v, int w) {
-    e[++k].v = v;
-    e[k].u = u;
-    e[k].w = w;
-    e[k].next = head[u];
-    head[u] = k;
   }
 
   void prim() {
-    dis[1] = 0;
-    q.push({0, 1});
-    QString buf;
-    while (!q.empty() && cnt < n) {
-      int d = q.top().first, u = q.top().second;
-      qDebug() << QString("visit %1->%2").arg(e[u].u - 1).arg(e[u].v - 1);
-      buf = QString("1 %1 %2 3 ").arg(e[u].u - 1).arg(e[u].v - 1);
-      steps.push_back(buf.toStdString());
-      q.pop();
-      if (vis[u])
-        continue;
-      cnt++;
-      sum += d;
-      vis[u] = 1;
-      int stepCnt = 0;
-      buf.clear();
-      for (int i = head[u]; i != -1; i = e[i].next)
-        if (e[i].w < dis[e[i].v]) {
-          dis[e[i].v] = e[i].w;
-          q.push({dis[e[i].v], e[i].v});
-          buf += QString(" %1 %2 2 ").arg(e[i].u - 1).arg(e[i].v - 1);
-          //          stepCnt++;`
+    //初始化距离数组为一个很大的数（10亿左右）
+    memset(dist, 0x3f, sizeof(dist));
+    memset(path, 0, sizeof(path));
+    int res = 0;
+    dist[1] = 0;  //从 1 号节点开始生成
+    Step load, recv, his;
+    for (int i = 0; i < n; i++) {  //每次循环选出一个点加入到生成树
+      int t = -1;
+      for (int j = 1; j <= n; j++)  //每个节点一次判断
+      {
+        if (!st[j] && (t == -1 || dist[j] < dist[t]))
+          //如果没有在树中，且到树的距离最短，则选择该点
+          t = j;
+      }
+
+      // 2022.6.1 发现测试用例加强后，需要判断孤立点了
+      //如果孤立点，直返输出不能，然后退出
+      if (dist[t] == 0x3f3f3f3f) {
+        qDebug() << "Isolated Point!";
+        return;
+      }
+
+      st[t] = 1;  // 选择该点
+      res += dist[t];
+      for (int i = 1; i <= n; i++) {
+        //更新生成树外的点到生成树的距离
+        if (dist[i] > g[t][i] && !st[i]) {
+          //从 t 到节点 i 的距离小于原来距离，则更新。
+          dist[i] = g[t][i];  //更新距离
+          path[i] = t;  //从 t 到 i 的距离更短，i 的前驱变为 t.
+                        //          load.add(i - 1, t - 1, 2);
+                        //          recv.add(i - 1, t - 1, 1);
         }
-      if (stepCnt > 0) {
-        buf = QString::number(stepCnt) + buf;
-        steps.push_back(buf.toStdString());
-        qDebug() << buf;
+      }
+      Step nextPath;
+      int now = t, pre = path[t];
+      while (pre > 0) {
+        nextPath.add(pre - 1, now - 1, 3);  // Path Edges
+        now = pre, pre = path[pre];
+      }
+      //      if (i > 0)
+      steps.push_back((load + his).get());
+      his += nextPath;
+      steps.push_back((his).get());
+
+      for (int r = 1; r <= n; r++) {
+        auto check = [&](int t, int r) -> bool {
+          return t != r && g[t][r] < 0x3f3f3f3f;
+        };
+        if (check(t, r)) {
+          load.add(t - 1, r - 1, 2);  // Pre Load Edges
+          recv.add(t - 1, r - 1, 1);
+        }
       }
     }
+    steps.push_back((recv + his).get());
+  }
+
+  int Dijkstra() {
+    memset(dist, 0x3f, sizeof(dist));  //初始化距离  0x3f代表无限大
+    memset(path, 0, sizeof(path));
+
+    dist[1] = 0;  //第一个点到自身的距离为0
+    Step load, recv, his;
+    for (int i = 0; i < n; i++) {  //有n个点所以要进行n次 迭代
+
+      //      load.clear();
+
+      int t = 0;                    // t存储当前访问的点
+      for (int j = 1; j <= n; j++)  //这里的j代表的是从1号点开始
+        if (!st[j] && (t == 0 || dist[t] > dist[j])) {
+          t = j;
+        }
+      st[t] = true;
+      //      qDebug() << QString("V[%1] -> S").arg(t - 1);
+
+      //依次更新每个点所到相邻的点路径值
+      for (int j = 1; j <= n; j++) {
+        if (dist[t] + g[t][j] < dist[j]) {
+          // Select 1~t + t~j
+          path[j] = t;
+          dist[j] = dist[t] + g[t][j];
+        }
+        //        dist[j] = min(dist[j], dist[t] + g[t][j]);
+      }
+      Step nextPath;
+      int now = t, pre = path[t];
+      while (pre > 0) {
+        nextPath.add(pre - 1, now - 1, 3);  // Path Edges
+        now = pre, pre = path[pre];
+      }
+      //      if (i > 0)
+      steps.push_back((load + his).get());
+      his += nextPath;
+      steps.push_back((his).get());
+
+      for (int r = 1; r <= n; r++) {
+        auto check = [&](int t, int r) -> bool {
+          return t != r && g[t][r] < 0x3f3f3f3f;
+        };
+        if (check(t, r)) {
+          load.add(t - 1, r - 1, 2);  // Pre Load Edges
+          recv.add(t - 1, r - 1, 1);
+        }
+      }
+    }
+    steps.push_back((recv + his).get());
+    if (dist[n] == 0x3f3f3f3f)
+      return -1;  //如果第n个点路径为无穷大即不存在最低路径
+    return dist[n];
   }
 
   string getSteps() {
-    string ret;
-    for (int i = 0; i < steps.size(); i++)
-      ret += steps[i], ret.push_back('\n');
-    for (string i : steps)
-      qDebug() << QString::fromLocal8Bit(i.data());
-    return ret;
+    //    for (auto&& s : steps)
+    //      qDebug() << s.data();
+    return _getSteps(steps);
   }
 };
 

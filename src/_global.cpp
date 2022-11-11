@@ -1,8 +1,8 @@
 #include "_global.h"
 
-std::vector<int> getnum(std::string s) {
+vector<int> _getNum(const std::string& s) {
   int x = 0;
-  std::vector<int> v;
+  vector<int> v;
   for (int i = 0; i < (int)s.length(); i++) {
     if (s[i] >= '0' && s[i] <= '9') {
       while (s[i] >= '0' && s[i] <= '9' && i < (int)s.length())
@@ -12,6 +12,16 @@ std::vector<int> getnum(std::string s) {
     }
   }
   return v;
+}
+
+string _getSteps(const vector<string>& steps) {
+  string ret;
+  for (int i = 0; i < (int)steps.size(); i++)
+    if (steps[i].size() > 1)
+      ret += steps[i], ret.push_back('\n');
+  //  for (string i : steps)
+  //    qDebug() << QString::fromLocal8Bit(i.data());
+  return ret;
 }
 
 int MAXV = 10;

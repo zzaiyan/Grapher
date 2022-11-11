@@ -8,14 +8,9 @@ Home::Home(QWidget* parent) : QWidget(parent), ui(new Ui::Home) {
   setFixedSize(1000, 600);
   setWindowTitle("Grapher");
   srand(time(NULL));
-  //    wid=new World(this);
-  //    wid->move(0,0);
-  //    wid->buildgraph("7 0 1 28 0 5 10 1 2 16 1 6 14 2 3 12 3 6 18 3 4 22 4 6
-  //    24 5 4 25"); wid->setStep("3 0 1 2 1 6 3 1 2 3 4 1 2 1 1 6 2 6 4 3 6 3
-  //    3");
 
   timer = new QTimer();
-  timer->setInterval(1000 * 1);
+  timer->setInterval(1000 * 0.5);
 
   Cur_graph = Sample_graph;
   wid_dfs = new World(this);
@@ -113,15 +108,10 @@ void Home::Init_graph() {
   wid_dij->buildgraph(Cur_graph);
 
   std::string s_dfs, s_prim, s_dij;
-  //    s_dfs=DFS(Cur_graph).Steps();
-  //    qDebug() << QString::fromStdString(s_dfs);
 
-  // 实现要求的三个算法,根据Cur_graph中的图信息建图。
-  // 同时,在运行三个算法运行的同时生成其步骤信息，将三个算法对应的步骤信息分别放到s_dfs,s_prim,s_dij中，以实现动态展示
-  // 自己设计步骤信息的生成方式，只要生成的步骤信息满足README中的格式要求，能正常展示算法流程即可。
-  // You code here!!!!!!!!!!!
   dGraph = new eGraph(Cur_graph);
-  pGraph = new ALGraph(Cur_graph);
+  pGraph = new MGraph(Cur_graph);
+  mGraph = new MGraph(Cur_graph);
 
   dGraph->dfs();
   s_dfs = dGraph->getSteps();
@@ -129,12 +119,9 @@ void Home::Init_graph() {
   pGraph->prim();
   s_prim = pGraph->getSteps();
 
-  delete dGraph;
-  delete pGraph;
+  mGraph->Dijkstra();
+  s_dij = mGraph->getSteps();
 
-  //    s_dfs=;
-  //    s_prim=;
-  //    s_dij=;
   wid_dfs->setStep(s_dfs);  //设置dfs算法步骤信息,即传递对应字符串
   wid_prim->setStep(s_prim);  //设置prim算法步骤信息
   wid_dij->setStep(s_dij);    //设置dijkstra算法步骤信息

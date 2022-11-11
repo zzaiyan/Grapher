@@ -23,7 +23,7 @@ class World : public QWidget {
   void setText(QString s);
   QPen pen(int x);
 
-  void paintEvent(QPaintEvent* event);
+  void paintEvent(QPaintEvent*);
   QPen pen_1, pen_2, pen_3;
   void drawNode(QPoint t, QString s, QPen pen);
   void drawEdge(QPoint t1, QPoint t2, int r, QString s, QPen pen);

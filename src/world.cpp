@@ -1,12 +1,14 @@
 #include "world.h"
 
+constexpr int penWidth = 3;
+
 World::World(QWidget* parent) : QWidget(parent) {
-  pen_1.setColor(Qt::black);
-  pen_1.setWidth(2);
-  pen_2.setColor(QColor(255, 153, 0));
-  pen_2.setWidth(2);
+  pen_1.setColor(QColor(77, 77, 77));
+  pen_1.setWidth(penWidth);
+  pen_2.setColor(QColor(0, 153, 153));
+  pen_2.setWidth(penWidth);
   pen_3.setColor(QColor(255, 51, 51));
-  pen_3.setWidth(2);
+  pen_3.setWidth(penWidth);
 
   std::memset(edge, 0, sizeof(edge));
   std::memset(color_E, 0, sizeof(color_E));
@@ -16,14 +18,15 @@ World::World(QWidget* parent) : QWidget(parent) {
   Txt = new QLabel(this);
   Txt->move(0, 300);
   Txt->resize(300, 100);
-  Txt->setFont(QFont("Microsoft YaHei", 16, 75));
+  Txt->setFont(QFont("JetBrains Mono", 18, 75));
   Txt->setAlignment(Qt::AlignCenter);
   //  Sample_graph =
   //      "8 0 1 680 0 2 1380 0 3 730 0 4 530 1 2 2600 1 5 960 2 3 2500 3 6 840
   //      4 " "5 820 4 6 570 4 7 650 5 7 500 6 7 1140";
   is_sample = 0;
   resize(300, 400);
-  //    repaint();
+  //  repaint();
+  //  setStyleSheet("");
 }
 
 void World::buildgraph(std::string s) {
@@ -32,9 +35,9 @@ void World::buildgraph(std::string s) {
   std::memset(color_N, 0, sizeof(color_N));
   siz_node = siz_step = 0;
   steps.clear();
-  std::vector<int> v = getnum(s);
+  std::vector<int> v = _getNum(s);
   siz_node = v[0];
-  for (int i = 1; i < v.size(); i += 3) {
+  for (int i = 1; i < (int)v.size(); i += 3) {
     edge[v[i]][v[i + 1]] = v[i + 2];
     color_E[v[i]][v[i + 1]] = 1;
     edge[v[i + 1]][v[i]] = v[i + 2];
@@ -51,7 +54,7 @@ void World::buildgraph(std::string s) {
 }
 
 void World::setStep(std::string s) {
-  steps = getnum(s);
+  steps = _getNum(s);
   Current_step = steps.begin();
 }
 
@@ -91,7 +94,7 @@ QPen World::pen(int x) {
   return pen_1;
 }
 
-void World::paintEvent(QPaintEvent* event) {
+void World::paintEvent(QPaintEvent*) {
   //  qDebug() << "paintEvent";
   int x = 150, y = 150, r = 130;
   int n = siz_node;
@@ -135,8 +138,8 @@ void World::drawNode(QPoint t, QString s, QPen pen) {
   QPainter paint(this);
   paint.setPen(pen);
   paint.setRenderHint(QPainter::Antialiasing);
-  paint.drawEllipse(t, 10, 10);
-  paint.drawText(t + QPoint(-5, 3), s);
+  paint.drawEllipse(t, 12, 12);
+  paint.drawText(t + QPoint(-5, 6), s);
 }
 
 void World::drawEdge(QPoint t1, QPoint t2, int r, QString s, QPen pen) {
@@ -146,6 +149,11 @@ void World::drawEdge(QPoint t1, QPoint t2, int r, QString s, QPen pen) {
   paint.setPen(pen);
   paint.setRenderHint(QPainter::Antialiasing);
 
+  //  paint.setBrush(QBrush(QColor(Qt::white)));
+  //  paint.drawRect(
+  //      ((tmp * (1.0 - (siz_node + 1) / 2 / double(siz_node + 1))) + t1).x(),
+  //      ((tmp * (1.0 - (siz_node + 1) / 2 / double(siz_node + 1))) + t1).y(),
+  //      20, 20);
   paint.drawText((tmp * (1.0 - (siz_node + 1) / 2 / double(siz_node + 1))) + t1,
                  s);
 

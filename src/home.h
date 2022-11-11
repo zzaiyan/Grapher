@@ -36,7 +36,8 @@ class Home : public QWidget {
 
   // Data
   eGraph* dGraph;
-  ALGraph* pGraph;
+  MGraph* pGraph;
+  MGraph* mGraph;
 
  private:
   Ui::Home* ui;
