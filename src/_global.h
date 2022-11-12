@@ -10,7 +10,7 @@
 using std::string;
 using std::vector;
 
-extern int MAXV;
+extern int MAXV, stepCnt;
 extern std::string Sample_graph;
 
 vector<int> _getNum(const std::string& s);

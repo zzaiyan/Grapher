@@ -24,7 +24,7 @@ class Home : public QWidget {
  public:
   Home(QWidget* parent = nullptr);
   ~Home();
-  World *wid_dij, *wid_dfs, *wid_prim, *wid;
+  World *wid_dij, *wid_dfs, *wid_prim, *wid_ast;
   void Setwid(std::string s);
   QPushButton *btn_nxt, *btn_auto, *btn_rand, *btn_samp, *btn_stop, *btn_reset;
   QTimer* timer;
@@ -38,6 +38,7 @@ class Home : public QWidget {
   eGraph* dGraph;
   MGraph* pGraph;
   MGraph* mGraph;
+  AGraph* aGraph;
 
  private:
   Ui::Home* ui;

@@ -22,8 +22,9 @@ class eGraph {
  public:
   int n, m;
   vector<Edge> e;
-  vector<bool> vis;
+  vector<int> vis;
   vector<string> steps;
+  vector<QString> logs;
 
   eGraph(string s) {
     auto vec = _getNum(s);
@@ -40,6 +41,21 @@ class eGraph {
     }
   }
 
+  void printLogs(int i) {
+    if (i <= n)
+      qDebug() << logs[i];
+  }
+
+  void log(int* arr, int sz, QString head) {
+    head.append(" = {");
+    //
+    for (int i = 0; i < sz; i++) {
+      head += QString(" %1,").arg(arr[i]);
+    }
+    logs.push_back(head.left(head.length() - 1) + " }");
+    qDebug() << logs.back();
+  }
+
   Step load, recv, his;
   void dfs() {
     load.clear();
@@ -51,6 +67,7 @@ class eGraph {
   }
   void dfs(int u) {
     vis[u] = true;
+    log(vis.data(), n, "DFS: vis");
     int ne;
     load.clear();
     //    qDebug() << "visit " << u;
@@ -95,6 +112,8 @@ class MGraph {
 
   vector<string> steps;
 
+  vector<QString> logs;
+
  public:
   MGraph(const string& s) {
     memset(g, 0x3f, sizeof g);  //初始化图 因为是求最短路径
@@ -106,6 +125,21 @@ class MGraph {
       //      qDebug() << QString("Edge: %1, %2, %3").arg(a).arg(b).arg(c);
       g[a + 1][b + 1] = g[b + 1][a + 1] = c;
     }
+  }
+
+  void printLogs(int i) {
+    if (i <= n)
+      qDebug() << logs[i];
+  }
+
+  void log(int* arr, int sz, QString head) {
+    head.append(" = {");
+    //
+    for (int i = 1; i <= sz; i++) {
+      head += QString(" %1,").arg(arr[i]);
+    }
+    logs.push_back(head.left(head.length() - 1) + " }");
+    qDebug() << logs.back();
   }
 
   void prim() {
@@ -132,6 +166,7 @@ class MGraph {
       }
 
       st[t] = 1;  // 选择该点
+      dist[t] = 0;
       node.clear();
       node.add(t - 1, t - 1, 4);
 
@@ -166,9 +201,10 @@ class MGraph {
           recv.add(t - 1, r - 1, 1);
         }
       }
+      log(dist, n, "Prim: lowCost");
     }
     steps.push_back((recv + his).get());
-    qDebug() << "MST.len = " << res;
+    //    qDebug() << "MST.len = " << res;
   }
 
   int dijkstra() {
@@ -177,7 +213,7 @@ class MGraph {
 
     dist[1] = 0;  //第一个点到自身的距离为0
     Step load, recv, his, node;
-    dist[1] = 0;  //从 1 号节点开始生成
+
     node.add(0, 0, 4);
     for (int i = 0; i < n; i++) {   //有n个点所以要进行n次 迭代
       int t = 0;                    // t存储当前访问的点
@@ -222,11 +258,93 @@ class MGraph {
           recv.add(t - 1, r - 1, 1);
         }
       }
+      log(dist, n, "Dijk: dist");
     }
+
     steps.push_back((recv + his).get());
     if (dist[n] == 0x3f3f3f3f)
       return -1;  //如果第n个点路径为无穷大即不存在最低路径
     return dist[n];
+  }
+
+  string getSteps() { return _getSteps(steps); }
+};
+
+class AGraph {
+  struct Edge {
+    int start, end;
+  };
+
+ public:
+  int n, m;
+  vector<Edge> e;
+  vector<bool> vis;
+  vector<string> steps;
+  vector<QString> logs;
+
+  int f[8]{0};
+  int g[8]{0};
+  int h[8]{1100, 1350, 2450, 1900, 650, 500, 1140, 0};
+
+  AGraph(string s) {
+    auto vec = _getNum(s);
+    n = vec[0];
+    m = vec.size() / 3;
+    m <<= 1;
+    //    e.push_back({-1, -1});
+    vis.resize(n + 1, false);
+    for (int i = 1; i < (int)vec.size(); i++) {
+      int a = vec[i++], b = vec[i++];
+      e.push_back({a, b});
+      e.push_back({b, a});
+      //      qDebug() << QString("Edge: %1, %2").arg(a).arg(b);
+    }
+  }
+
+  Step load, recv, his;
+  void dfs() {
+    load.clear();
+    recv.clear();
+    his.clear();
+    dfs(0);
+    steps.push_back(his.get());
+  }
+
+  void AStar(int u);
+
+  void printLogs(int i) {
+    if (i < (int)logs.size())
+      qDebug() << logs[i].toStdString().data();
+  }
+
+  void dfs(int u) {
+    vis[u] = true;
+    int ne;
+    load.clear();
+    //    qDebug() << "visit " << u;
+    his.add(u, u, 4);
+
+    for (int i = 0; i < m; ++i) {
+      if (u == e[i].start && !vis[e[i].end]) {
+        load.add(u, e[i].end, 2);
+        recv.add(u, e[i].end, 1);
+      }
+    }
+
+    for (int i = 0; i < m; ++i) {
+      if (u == e[i].start && !vis[e[i].end])
+        ne = e[i].end;
+      else
+        continue;
+
+      steps.push_back((recv + his).get());
+
+      steps.push_back((recv + his + load).get());
+      his.add(u, ne, 3);
+      steps.push_back((recv + load + his).get());
+
+      dfs(ne);
+    }
   }
 
   string getSteps() { return _getSteps(steps); }

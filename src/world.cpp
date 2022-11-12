@@ -7,7 +7,7 @@ World::World(QWidget* parent) : QWidget(parent) {
   pen_1.setWidth(penWidth);
   pen_2.setColor(QColor(0, 153, 153));
   pen_2.setWidth(penWidth);
-  pen_3.setColor(QColor(255, 51, 51));
+  pen_3.setColor(QColor(236, 114, 147));
   pen_3.setWidth(penWidth);
   pen_4.setColor(QColor(255, 153, 18));
   pen_4.setWidth(penWidth);
