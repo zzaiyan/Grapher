@@ -13,6 +13,7 @@ using std::vector;
 
 using namespace std;
 
+// use for DFS
 class eGraph {
   struct Edge {
     int start, end;
@@ -25,7 +26,6 @@ class eGraph {
   vector<string> steps;
 
   eGraph(string s) {
-    qDebug() << "-------------------------------build eGraph";
     auto vec = _getNum(s);
     n = vec[0];
     m = vec.size() / 3;
@@ -46,12 +46,16 @@ class eGraph {
     recv.clear();
     his.clear();
     dfs(0);
+    //    node.add(n - 1, n - 1, 4);
+    steps.push_back(his.get());
   }
   void dfs(int u) {
     vis[u] = true;
     int ne;
     load.clear();
     //    qDebug() << "visit " << u;
+    his.add(u, u, 4);
+
     for (int i = 0; i < m; ++i) {
       if (u == e[i].start && !vis[e[i].end]) {
         load.add(u, e[i].end, 2);
@@ -65,6 +69,8 @@ class eGraph {
       else
         continue;
 
+      steps.push_back((recv + his).get());
+
       steps.push_back((recv + his + load).get());
       his.add(u, ne, 3);
       steps.push_back((recv + load + his).get());
@@ -77,6 +83,8 @@ class eGraph {
 };
 
 constexpr int MAXN = 20;
+
+// use for Prim and Dijkstra
 class MGraph {
   int g[MAXN][MAXN];  //为稠密阵所以用邻接矩阵存储
   int dist[MAXN];     //用于记录每一个点距离第一个点的距离
@@ -89,7 +97,6 @@ class MGraph {
 
  public:
   MGraph(const string& s) {
-    qDebug() << "-------------------------------build MpGraph";
     memset(g, 0x3f, sizeof g);  //初始化图 因为是求最短路径
                                 //所以每个点初始为无限大
     auto vec = _getNum(s);
@@ -106,8 +113,9 @@ class MGraph {
     memset(dist, 0x3f, sizeof(dist));
     memset(path, 0, sizeof(path));
     int res = 0;
+    Step load, recv, his, node;
     dist[1] = 0;  //从 1 号节点开始生成
-    Step load, recv, his;
+    node.add(0, 0, 4);
     for (int i = 0; i < n; i++) {  //每次循环选出一个点加入到生成树
       int t = -1;
       for (int j = 1; j <= n; j++)  //每个节点一次判断
@@ -117,7 +125,6 @@ class MGraph {
           t = j;
       }
 
-      // 2022.6.1 发现测试用例加强后，需要判断孤立点了
       //如果孤立点，直返输出不能，然后退出
       if (dist[t] == 0x3f3f3f3f) {
         qDebug() << "Isolated Point!";
@@ -125,6 +132,9 @@ class MGraph {
       }
 
       st[t] = 1;  // 选择该点
+      node.clear();
+      node.add(t - 1, t - 1, 4);
+
       res += dist[t];
       for (int i = 1; i <= n; i++) {
         //更新生成树外的点到生成树的距离
@@ -132,8 +142,6 @@ class MGraph {
           //从 t 到节点 i 的距离小于原来距离，则更新。
           dist[i] = g[t][i];  //更新距离
           path[i] = t;  //从 t 到 i 的距离更短，i 的前驱变为 t.
-                        //          load.add(i - 1, t - 1, 2);
-                        //          recv.add(i - 1, t - 1, 1);
         }
       }
       Step nextPath;
@@ -142,9 +150,11 @@ class MGraph {
         nextPath.add(pre - 1, now - 1, 3);  // Path Edges
         now = pre, pre = path[pre];
       }
-      //      if (i > 0)
+
       steps.push_back((load + his).get());
       his += nextPath;
+      steps.push_back((load + his).get());
+      his += node;
       steps.push_back((his).get());
 
       for (int r = 1; r <= n; r++) {
@@ -158,25 +168,23 @@ class MGraph {
       }
     }
     steps.push_back((recv + his).get());
+    qDebug() << "MST.len = " << res;
   }
 
-  int Dijkstra() {
+  int dijkstra() {
     memset(dist, 0x3f, sizeof(dist));  //初始化距离  0x3f代表无限大
     memset(path, 0, sizeof(path));
 
     dist[1] = 0;  //第一个点到自身的距离为0
-    Step load, recv, his;
-    for (int i = 0; i < n; i++) {  //有n个点所以要进行n次 迭代
-
-      //      load.clear();
-
+    Step load, recv, his, node;
+    dist[1] = 0;  //从 1 号节点开始生成
+    node.add(0, 0, 4);
+    for (int i = 0; i < n; i++) {   //有n个点所以要进行n次 迭代
       int t = 0;                    // t存储当前访问的点
       for (int j = 1; j <= n; j++)  //这里的j代表的是从1号点开始
         if (!st[j] && (t == 0 || dist[t] > dist[j])) {
           t = j;
         }
-      st[t] = true;
-      //      qDebug() << QString("V[%1] -> S").arg(t - 1);
 
       //依次更新每个点所到相邻的点路径值
       for (int j = 1; j <= n; j++) {
@@ -187,6 +195,11 @@ class MGraph {
         }
         //        dist[j] = min(dist[j], dist[t] + g[t][j]);
       }
+
+      st[t] = true;
+      node.clear();
+      node.add(t - 1, t - 1, 4);
+
       Step nextPath;
       int now = t, pre = path[t];
       while (pre > 0) {
@@ -196,6 +209,8 @@ class MGraph {
       //      if (i > 0)
       steps.push_back((load + his).get());
       his += nextPath;
+      steps.push_back((load + his).get());
+      his += node;
       steps.push_back((his).get());
 
       for (int r = 1; r <= n; r++) {
@@ -214,11 +229,7 @@ class MGraph {
     return dist[n];
   }
 
-  string getSteps() {
-    //    for (auto&& s : steps)
-    //      qDebug() << s.data();
-    return _getSteps(steps);
-  }
+  string getSteps() { return _getSteps(steps); }
 };
 
 #endif  // GRAPH_H

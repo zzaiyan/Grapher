@@ -7,12 +7,13 @@ Home::Home(QWidget* parent) : QWidget(parent), ui(new Ui::Home) {
   ui->setupUi(this);
   setFixedSize(1000, 600);
   setWindowTitle("Grapher");
-  srand(time(NULL));
+  QElapsedTimer et;
+  srand(et.nsecsElapsed());
 
   timer = new QTimer();
   timer->setInterval(1000 * 0.5);
 
-  Cur_graph = Sample_graph;
+  strGraph = Sample_graph;
   wid_dfs = new World(this);
   wid_dfs->setText("DFS");
   wid_prim = new World(this);
@@ -53,7 +54,7 @@ Home::Home(QWidget* parent) : QWidget(parent), ui(new Ui::Home) {
   connect(timer, &QTimer::timeout, this, [=]() { nextStep(); });
 
   connect(btn_samp, &QPushButton::clicked, this, [=]() {
-    Cur_graph = Sample_graph;
+    strGraph = Sample_graph;
     Init_graph();
   });
 
@@ -72,8 +73,9 @@ Home::Home(QWidget* parent) : QWidget(parent), ui(new Ui::Home) {
         x = ran(n), y = ran(n);
       s += std::to_string(x) + " " + std::to_string(y) + " " +
            std::to_string(dis) + " ";
+      tag[x][y] = tag[y][x] = 1;
     }
-    Cur_graph = s;  //更新Cur_graph为新生成的数据
+    strGraph = s;  //更新Cur_graph为新生成的数据
                     //        Cur_graph="5 0 1 1 0 2 1 0 3 1 1 4 1 ";
     Init_graph();
   });
@@ -103,15 +105,15 @@ void Home::nextStep() {
 }
 
 void Home::Init_graph() {
-  wid_dfs->buildgraph(Cur_graph);
-  wid_prim->buildgraph(Cur_graph);
-  wid_dij->buildgraph(Cur_graph);
+  wid_dfs->buildgraph(strGraph);
+  wid_prim->buildgraph(strGraph);
+  wid_dij->buildgraph(strGraph);
 
   std::string s_dfs, s_prim, s_dij;
 
-  dGraph = new eGraph(Cur_graph);
-  pGraph = new MGraph(Cur_graph);
-  mGraph = new MGraph(Cur_graph);
+  dGraph = new eGraph(strGraph);
+  pGraph = new MGraph(strGraph);
+  mGraph = new MGraph(strGraph);
 
   dGraph->dfs();
   s_dfs = dGraph->getSteps();
@@ -119,7 +121,7 @@ void Home::Init_graph() {
   pGraph->prim();
   s_prim = pGraph->getSteps();
 
-  mGraph->Dijkstra();
+  mGraph->dijkstra();
   s_dij = mGraph->getSteps();
 
   wid_dfs->setStep(s_dfs);  //设置dfs算法步骤信息,即传递对应字符串

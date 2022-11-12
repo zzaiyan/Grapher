@@ -29,7 +29,7 @@ class Home : public QWidget {
   QPushButton *btn_nxt, *btn_auto, *btn_rand, *btn_samp, *btn_stop, *btn_reset;
   QTimer* timer;
   //  std::string Sample_graph;
-  std::string Cur_graph;
+  std::string strGraph;
 
   void nextStep();
   void Init_graph();
