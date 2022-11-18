@@ -111,7 +111,6 @@ class MGraph {
   int n, m;
 
   vector<string> steps;
-
   vector<QString> logs;
 
  public:
@@ -122,7 +121,6 @@ class MGraph {
     n = vec[0], m = vec.size() / 3;
     for (int i = 1; i < (int)vec.size();) {
       int a = vec[i++], b = vec[i++], c = vec[i++];
-      //      qDebug() << QString("Edge: %1, %2, %3").arg(a).arg(b).arg(c);
       g[a + 1][b + 1] = g[b + 1][a + 1] = c;
     }
   }
@@ -282,8 +280,7 @@ class AGraph {
   vector<string> steps;
   vector<QString> logs;
 
-  int f[8]{0};
-  int g[8]{0};
+  int f[8]{0}, g[8]{0};
   int h[8]{1100, 1350, 2450, 1900, 650, 500, 1140, 0};
 
   AGraph(string s) {

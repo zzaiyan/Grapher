@@ -16,13 +16,9 @@ extern std::string Sample_graph;
 vector<int> _getNum(const std::string& s);
 string _getSteps(const vector<string>& steps);
 
-class Step {
+struct Step {
   QString out;
   int cnt = 0;
-
- public:
-  Step() = default;
-  Step(const QString& a, int b) : out(a), cnt(b) {}
 
   void add(int a, int b, int c) {
     if (std::min(a, b) < 0)
